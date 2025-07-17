@@ -2,7 +2,7 @@ import asyncio
 import base64
 import os
 from typing import Union # Import Union
-from fastapi import FastAPI, HTTPException, Security
+from fastapi import FastAPI, HTTPException, Security, Query, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -120,6 +120,16 @@ async def list_directory_endpoint(path: str = "."):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
 
+@app.get("/download_folder_as_zip", summary="Download a folder from Nextcloud as a zip archive", dependencies=[Security(get_api_key)])
+async def download_folder_as_zip_endpoint(path: str = Query(..., description="The path of the folder to download")):
+    try:
+        zip_content = await nextcloud_ctx.download_folder_as_zip(path)
+        return Response(content=zip_content, media_type="application/zip", headers={"Content-Disposition": f"attachment; filename=\"{path.split('/')[-1]}.zip\""})
+    except NextcloudMcpError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
+
 @app.post("/move_item", summary="Move or rename a file or folder in Nextcloud", dependencies=[Security(get_api_key)])
 async def move_item_endpoint(request: MoveItemRequest):
     try:
@@ -140,6 +150,16 @@ async def copy_item_endpoint(request: CopyItemRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
 
+@app.post("/share_folder", summary="Share a folder in Nextcloud and get a public share link", dependencies=[Security(get_api_key)])
+async def share_folder_endpoint(request: PathRequest):
+    try:
+        public_url = await nextcloud_ctx.share_folder(request.path)
+        return {"message": f"Folder '{request.path}' shared successfully", "public_url": public_url}
+    except NextcloudMcpError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
+
 @app.post("/create_folder", summary="Create a folder in Nextcloud", dependencies=[Security(get_api_key)])
 async def create_folder_endpoint(request: PathRequest):
     try:
@@ -151,20 +171,20 @@ async def create_folder_endpoint(request: PathRequest):
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
 
 @app.delete("/delete_file", summary="Delete a file from Nextcloud", dependencies=[Security(get_api_key)])
-async def delete_file_endpoint(request: PathRequest):
+async def delete_file_endpoint(path: str = Query(..., description="The path of the file to delete")):
     try:
-        await nextcloud_ctx.delete_file(request.path)
-        return {"message": f"File '{request.path}' deleted successfully"}
+        await nextcloud_ctx.delete_file(path)
+        return {"message": f"File '{path}' deleted successfully"}
     except NextcloudMcpError as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
 
 @app.delete("/delete_folder", summary="Delete a folder from Nextcloud", dependencies=[Security(get_api_key)])
-async def delete_folder_endpoint(request: PathRequest):
+async def delete_folder_endpoint(path: str = Query(..., description="The path of the folder to delete")):
     try:
-        await nextcloud_ctx.delete_folder(request.path)
-        return {"message": f"Folder '{request.path}' deleted successfully"}
+        await nextcloud_ctx.delete_folder(path)
+        return {"message": f"Folder '{path}' deleted successfully"}
     except NextcloudMcpError as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:

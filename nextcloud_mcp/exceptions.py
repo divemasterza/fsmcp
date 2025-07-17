@@ -37,3 +37,7 @@ class MoveRenameError(NextcloudMcpError):
 class CopyError(NextcloudMcpError):
     """Raised when copying a file or folder fails."""
     pass
+
+class FolderDownloadError(NextcloudMcpError):
+    """Raised when downloading a folder as a zip fails."""
+    pass

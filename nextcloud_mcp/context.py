@@ -177,6 +177,35 @@ class Ctx:
                 f"Failed to copy item with status {response.status_code}: {response.text}"
             )
 
+    async def download_folder_as_zip(self, path: str) -> bytes:
+        """
+        Downloads a folder from Nextcloud as a zip archive.
+
+        Args:
+            path: The relative path for the folder to download.
+
+        Returns:
+            The content of the zip file as bytes.
+        """
+        remote_path = self._get_remote_path(path)
+        # Nextcloud provides a direct download link for folders as zip via WebDAV
+        download_url = self._get_webdav_url(remote_path)
+
+        response = await self.client.get(download_url)
+
+        if response.status_code == 200:
+            # Nextcloud typically returns application/zip for folder downloads
+            if response.headers.get("Content-Type") == "application/zip":
+                return response.content
+            else:
+                raise FolderDownloadError(f"Expected application/zip, but received {response.headers.get("Content-Type")}")
+        elif response.status_code == 404:
+            raise FolderDownloadError(f"Folder not found: {path}")
+        else:
+            raise FolderDownloadError(
+                f"Failed to download folder with status {response.status_code}: {response.text}"
+            )
+
     async def save_file(self, path: str, content: Union[bytes, str]) -> str:
         """
         Saves a file to Nextcloud and returns a public share link.
@@ -326,3 +355,45 @@ class Ctx:
             raise ShareCreationFailedError(
                 f"Failed to parse OCS API JSON response: {e}"
             ) from e
+
+    async def share_folder(self, path: str) -> str:
+        """
+        Shares a folder in Nextcloud and returns a public share link.
+
+        Args:
+            path: The relative path for the folder.
+
+        Returns:
+            The public URL for the shared folder.
+        """
+        remote_path = self._get_remote_path(path)
+        public_url = await self._create_public_share(remote_path)
+        return public_url
+
+    async def share_folder(self, path: str) -> str:
+        """
+        Shares a folder in Nextcloud and returns a public share link.
+
+        Args:
+            path: The relative path for the folder.
+
+        Returns:
+            The public URL for the shared folder.
+        """
+        remote_path = self._get_remote_path(path)
+        public_url = await self._create_public_share(remote_path)
+        return public_url
+
+    async def share_folder(self, path: str) -> str:
+        """
+        Shares a folder in Nextcloud and returns a public share link.
+
+        Args:
+            path: The relative path for the folder.
+
+        Returns:
+            The public URL for the shared folder.
+        """
+        remote_path = self._get_remote_path(path)
+        public_url = await self._create_public_share(remote_path)
+        return public_url

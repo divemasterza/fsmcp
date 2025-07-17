@@ -320,6 +320,41 @@ async def test_copy_item_failed(ctx):
 
 
 @pytest.mark.asyncio
+async def test_move_item_failed(ctx):
+    """Tests that MoveRenameError is raised on move/rename failure."""
+    ctx.client.request.return_value = MagicMock(status_code=500, text="Server Error")
+    with pytest.raises(
+        MoveRenameError, match="Failed to move/rename item with status 500: Server Error"
+    ):
+        await ctx.move_item("source.txt", "dest.txt")
+
+
+@pytest.mark.asyncio
+async def test_copy_item_success(ctx, config):
+    """Tests successful item copy."""
+    ctx.client.request.return_value = MagicMock(status_code=201)
+    source_path = "original.txt"
+    destination_path = "copy.txt"
+    await ctx.copy_item(source_path, destination_path)
+
+    expected_source_url = f"{config.instance_url}/remote.php/dav/files/{config.username}/{config.usage_folder}/{source_path}"
+    expected_destination_url = f"{config.instance_url}/remote.php/dav/files/{config.username}/{config.usage_folder}/{destination_path}"
+    ctx.client.request.assert_called_once_with(
+        "COPY", expected_source_url, headers={"Destination": expected_destination_url}
+    )
+
+
+@pytest.mark.asyncio
+async def test_copy_item_failed(ctx):
+    """Tests that CopyError is raised on copy failure."""
+    ctx.client.request.return_value = MagicMock(status_code=500, text="Server Error")
+    with pytest.raises(
+        CopyError, match="Failed to copy item with status 500: Server Error"
+    ):
+        await ctx.copy_item("source.txt", "dest.txt")
+
+
+@pytest.mark.asyncio
 async def test_create_folder_success(ctx, config):
     """Tests successful folder creation."""
     ctx.client.request.return_value = MagicMock(status_code=201)

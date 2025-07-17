@@ -15,6 +15,7 @@ from .exceptions import (
     DirectoryListingError,
     MoveRenameError,
     CopyError,
+    FolderDownloadError,
 )
 
 __all__ = [
@@ -31,4 +32,5 @@ __all__ = [
     "DirectoryListingError",
     "MoveRenameError",
     "CopyError",
+    "FolderDownloadError",
 ]
