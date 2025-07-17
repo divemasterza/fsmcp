@@ -235,3 +235,5 @@ For a detailed list of potential future features and improvements, please refer 
 ## How It Works
 
 The core logic is in the `Ctx` class (`nextcloud_mcp/context.py`), which handles the interactions with Nextcloud's WebDAV and OCS APIs.
+
+```
