@@ -11,6 +11,10 @@ from .exceptions import (
     ShareCreationFailedError,
     FolderCreationError,
     DeletionError,
+    FileReadError,
+    DirectoryListingError,
+    MoveRenameError,
+    CopyError,
 )
 
 __all__ = [
@@ -23,4 +27,8 @@ __all__ = [
     "ShareCreationFailedError",
     "FolderCreationError",
     "DeletionError",
+    "FileReadError",
+    "DirectoryListingError",
+    "MoveRenameError",
+    "CopyError",
 ]

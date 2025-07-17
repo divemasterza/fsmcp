@@ -21,3 +21,19 @@ class FolderCreationError(NextcloudMcpError):
 class DeletionError(NextcloudMcpError):
     """Raised when deleting a file or folder fails."""
     pass
+
+class FileReadError(NextcloudMcpError):
+    """Raised when reading a file fails."""
+    pass
+
+class DirectoryListingError(NextcloudMcpError):
+    """Raised when listing a directory fails."""
+    pass
+
+class MoveRenameError(NextcloudMcpError):
+    """Raised when moving or renaming a file/folder fails."""
+    pass
+
+class CopyError(NextcloudMcpError):
+    """Raised when copying a file or folder fails."""
+    pass

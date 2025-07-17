@@ -38,43 +38,111 @@ NEXTCLOUD_PASSWORD="your_password"
 # Optional: Specify a folder to save files in.
 # If not set, files will be saved in the root directory.
 NEXTCLOUD_USAGE_FOLDER="MyUploads"
+
+# API Key for securing the FastAPI endpoints.
+# Generate a strong, random key and keep it secret!
+API_KEY="your_super_secret_api_key"
 ```
 
 You can get a secure app password from your Nextcloud account settings under **Security > Devices & sessions**.
 
-### 4. Usage
+### 4. Usage (Library)
 
 The `save_and_share.py` script provides a simple example of how to use the library.
 
 ```bash
-python nextcloud_mcp/save_and_share.py
+python save_and_share.py
 ```
 
-The script will:
-1.  Load the configuration from your `.env` file.
-2.  Create a new text file with a timestamp.
-3.  Upload the file to your Nextcloud instance.
-4.  Print the public share URL to the console.
+### 5. Usage (FastAPI)
 
-## How It Works
+To run the FastAPI server, first ensure you have installed the `fastapi` and `uvicorn` dependencies:
 
-The core logic is in the `Ctx` class (`nextcloud_mcp/context.py`), which handles the two main steps:
-
-1.  **File Upload:** Uses the WebDAV protocol (`PUT` request) to upload the file to the specified path.
-2.  **Share Link Creation:** Uses the Nextcloud OCS (Open Collaboration Services) API to create a public share link for the uploaded file.
-
-## Project Structure
-
+```bash
+pip install -e '.[test]' # This installs core and test dependencies
+pip install "fastapi[all]" uvicorn
 ```
-.
-├── nextcloud_mcp/
-│   ├── __init__.py
-│   ├── config.py       # Configuration loading and validation
-│   ├── context.py      # Core Ctx class for Nextcloud interaction
-│   ├── exceptions.py   # Custom exception classes
-│   └── save_and_share.py # Example usage script
-├── tests/              # Unit tests
-├── .env.example        # Example environment file
-├── pyproject.toml      # Project metadata and dependencies
-└── README.md
+
+Then, you can start the server:
+
+```bash
+uvicorn api:app --host 0.0.0.0 --port 8000
+```
+
+The API will be available at `http://0.0.0.0:8000`. You can access the interactive API documentation (Swagger UI) at `http://0.0.0.0:8000/docs`.
+
+**Authentication:** All API endpoints now require a Bearer Token. You must include an `Authorization` header in your requests with the value `Bearer <YOUR_API_KEY>` where `<YOUR_API_KEY>` is the value from your `API_KEY` in the `.env` file.
+
+**API Endpoints:**
+
+*   **`POST /save_file`**: Save a file to Nextcloud and get a public share link.
+    ```bash
+    curl -X POST "http://0.0.0.0:8000/save_file" \
+         -H "Authorization: Bearer your_super_secret_api_key" \
+         -H "Content-Type: application/json" \
+         -d '{"path": "my_new_file.txt", "content": "Hello World!", "is_base64": false}'
+    ```
+
+*   **`GET /read_file`**: Read a file from Nextcloud.
+    ```bash
+    curl -X GET "http://0.0.0.0:8000/read_file?path=my_new_file.txt" \
+         -H "Authorization: Bearer your_super_secret_api_key"
+    ```
+
+*   **`PUT /alter_file`**: Alter (overwrite) a file in Nextcloud.
+    ```bash
+    curl -X PUT "http://0.0.0.0:8000/alter_file" \
+         -H "Authorization: Bearer your_super_secret_api_key" \
+         -H "Content-Type: application/json" \
+         -d '{"path": "my_new_file.txt", "content": "Altered content!", "is_base64": false}'
+    ```
+
+*   **`GET /list_directory`**: List contents of a directory in Nextcloud.
+    ```bash
+    curl -X GET "http://0.0.0.0:8000/list_directory?path=my_folder" \
+         -H "Authorization: Bearer your_super_secret_api_key"
+    ```
+
+*   **`POST /create_folder`**: Create a folder in Nextcloud.
+    ```bash
+    curl -X POST "http://0.0.0.0:8000/create_folder" \
+         -H "Authorization: Bearer your_super_secret_api_key" \
+         -H "Content-Type: application/json" \
+         -d '{"path": "my_new_folder"}'
+    ```
+
+*   **`POST /move_item`**: Move or rename a file or folder in Nextcloud.
+    ```bash
+    curl -X POST "http://0.0.0.0:8000/move_item" \
+         -H "Authorization: Bearer your_super_secret_api_key" \
+         -H "Content-Type: application/json" \
+         -d '{"source_path": "old_name.txt", "destination_path": "new_name.txt"}'
+    ```
+
+*   **`POST /copy_item`**: Copy a file or folder in Nextcloud.
+    ```bash
+    curl -X POST "http://0.0.0.0:8000/copy_item" \
+         -H "Authorization: Bearer your_super_secret_api_key" \
+         -H "Content-Type: application/json" \
+         -d '{"source_path": "original.txt", "destination_path": "copy.txt"}'
+    ```
+
+*   **`DELETE /delete_file`**: Delete a file from Nextcloud.
+    ```bash
+    curl -X DELETE "http://0.0.0.0:8000/delete_file" \
+         -H "Authorization: Bearer your_super_secret_api_key" \
+         -H "Content-Type: application/json" \
+         -d '{"path": "my_new_file.txt"}'
+    ```
+
+
+*   **`DELETE /delete_folder`**: Delete a folder from Nextcloud.
+    ```bash
+    curl -X DELETE "http://0.0.0.0:8000/delete_folder" \
+         -H "Authorization: Bearer your_super_secret_api_key" \
+         -H "Content-Type: application/json" \
+         -d '{"path": "my_new_folder"}'
+    ```
+
+
 ```
