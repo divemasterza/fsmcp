@@ -3,7 +3,18 @@
 # Stage 1: Builder - Build the wheel package
 FROM python:3.12-slim-bookworm as builder
 
+# Set environment variables
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE 1
+
+# Set working directory
 WORKDIR /app
+
+# Copy project metadata and source code early
+COPY pyproject.toml ./
+COPY README.md ./
+COPY nextcloud_mcp/ ./nextcloud_mcp/
+COPY api.py ./api.py
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -15,11 +26,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install pip and hatch to build the package
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir hatch
-
-# Copy project metadata and source code
-COPY pyproject.toml ./
-COPY nextcloud_mcp/ ./nextcloud_mcp/
-COPY api.py ./api.py
 
 # Build the package (hatch builds both sdist and wheel by default)
 RUN hatch build
