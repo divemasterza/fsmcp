@@ -78,32 +78,32 @@ mkdir -p nginx
 
 # --- 6. Build Docker images ---
 echo "\n--- Building Docker images ---"
-docker-compose build
+/usr/local/bin/docker-compose build
 
 # --- 7. Obtain SSL Certificates (First Run) ---
 echo "\n--- Obtaining initial SSL certificates with Certbot ---"
-echo "This step will temporarily run Nginx on port 80 to verify your domain."
+echo "This step will temporarily run Nginx on port 8080 to verify your domain."
 echo "Please ensure your domain's DNS is pointing to this server's IP address."
 read -p "Press Enter to continue..."
 
 # Start Nginx temporarily to allow Certbot to verify domain
-docker-compose up -d nginx
+/usr/local/bin/docker-compose up -d nginx
 
 # Run Certbot to get certificates
-docker-compose run --rm certbot
+/usr/local/bin/docker-compose run --rm certbot
 
 # Stop Nginx after certificates are obtained
-docker-compose stop nginx
+/usr/local/bin/docker-compose stop nginx
 
 # --- 8. Start the Full Stack ---
 echo "\n--- Starting the full Nextcloud MCP API stack ---"
-echo "Your API will be available at https://$DOMAIN_NAME"
+echo "Your API will be available at https://$DOMAIN_NAME:8443"
 read -p "Press Enter to continue..."
 
-docker-compose up -d
+/usr/local/bin/docker-compose up -d
 
 echo "\n===================================================="
 echo " Deployment Complete! "
-echo " Your Nextcloud MCP API should now be running at https://$DOMAIN_NAME "
-echo " Access API docs at https://$DOMAIN_NAME/docs "
+echo " Your Nextcloud MCP API should now be running at https://$DOMAIN_NAME:8443 "
+echo " Access API docs at https://$DOMAIN_NAME:8443/docs "
 echo "===================================================="
