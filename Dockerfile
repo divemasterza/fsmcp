@@ -1,13 +1,8 @@
 # syntax=docker/dockerfile:1.4
 
-# Stage 1: Build the application
+# Stage 1: Builder - Build the wheel package
 FROM python:3.12-slim-bookworm as builder
 
-# Set environment variables
-ENV PYTHONUNBUFFERED 1
-ENV PYTHONDONTWRITEBYTECODE 1
-
-# Set working directory
 WORKDIR /app
 
 # Install build dependencies
@@ -15,20 +10,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
     python3-dev \
+    # Add any other build-time dependencies if necessary
     && rm -rf /var/lib/apt/lists/*
 
-# Copy project files
+# Install hatchling to build the wheel
+RUN pip install --no-cache-dir hatchling
+
+# Copy project metadata and source code
 COPY pyproject.toml ./
-COPY README.md ./
 COPY nextcloud_mcp/ ./nextcloud_mcp/
 COPY api.py ./api.py
 
-# Install Python dependencies using pip (assuming pyproject.toml for dependencies)
-# We install in editable mode to ensure local package is found
-RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir -e .[test] # Install core and test dependencies
+# Build the wheel package
+RUN hatch build --wheel
 
-# Stage 2: Create the final runtime image
+# Stage 2: Runner - Create the final runtime image
 FROM python:3.12-slim-bookworm
 
 # Set environment variables
@@ -38,10 +34,16 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # Set working directory
 WORKDIR /app
 
-# Copy only necessary files from the builder stage
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /app/nextcloud_mcp /app/nextcloud_mcp
-COPY --from=builder /app/api.py /app/api.py
+# Copy only the built wheel from the builder stage
+COPY --from=builder /app/dist/*.whl ./
+
+# Copy application source code
+COPY nextcloud_mcp/ ./nextcloud_mcp/
+COPY api.py ./api.py
+
+# Install the built wheel and its runtime dependencies
+# The wheel contains the project's runtime dependencies defined in pyproject.toml
+RUN pip install --no-cache-dir *.whl
 
 # Expose the port Uvicorn will run on
 EXPOSE 8000
