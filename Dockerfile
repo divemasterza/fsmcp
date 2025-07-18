@@ -11,10 +11,15 @@ ENV PYTHONDONTWRITEBYTECODE 1
 WORKDIR /app
 
 # Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     gcc     python3-dev     && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy project files
 COPY pyproject.toml ./ 
+COPY README.md ./ # Add this line to copy README.md
 COPY nextcloud_mcp/ ./nextcloud_mcp/
 COPY api.py ./api.py
 
