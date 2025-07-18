@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install pip and hatch to build the wheel
+# Install pip and hatch to build the package
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir hatch
 
@@ -21,8 +21,8 @@ COPY pyproject.toml ./
 COPY nextcloud_mcp/ ./nextcloud_mcp/
 COPY api.py ./api.py
 
-# Build the wheel package
-RUN hatch build --wheel
+# Build the package (hatch builds both sdist and wheel by default)
+RUN hatch build
 
 # Stage 2: Runner - Create the final runtime image
 FROM python:3.12-slim-bookworm
