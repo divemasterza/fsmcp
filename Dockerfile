@@ -10,11 +10,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
     python3-dev \
-    # Add any other build-time dependencies if necessary
     && rm -rf /var/lib/apt/lists/*
 
-# Install hatchling to build the wheel
-RUN pip install --no-cache-dir hatchling
+# Install pip and hatch to build the wheel
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir hatch
 
 # Copy project metadata and source code
 COPY pyproject.toml ./
