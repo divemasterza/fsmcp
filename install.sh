@@ -76,14 +76,18 @@ prompt_and_update_env "CERTBOT_EMAIL" "Email for Certbot notifications" "your.em
 echo "Ensuring nginx configuration directory exists..."
 mkdir -p nginx
 
-# --- 6. Obtain SSL Certificates (First Run) ---
+# --- 6. Build Docker images ---
+echo "\n--- Building Docker images ---"
+docker compose build
+
+# --- 7. Obtain SSL Certificates (First Run) ---
 echo "\n--- Obtaining initial SSL certificates with Certbot ---"
 echo "This step will temporarily run Nginx on port 80 to verify your domain."
 echo "Please ensure your domain's DNS is pointing to this server's IP address."
 read -p "Press Enter to continue..."
 
 # Start Nginx temporarily to allow Certbot to verify domain
-docker compose up --build -d nginx
+docker compose up -d nginx
 
 # Run Certbot to get certificates
 docker compose run --rm certbot
@@ -91,12 +95,12 @@ docker compose run --rm certbot
 # Stop Nginx after certificates are obtained
 docker compose stop nginx
 
-# --- 7. Start the Full Stack ---
+# --- 8. Start the Full Stack ---
 echo "\n--- Starting the full Nextcloud MCP API stack ---"
 echo "Your API will be available at https://$DOMAIN_NAME"
 read -p "Press Enter to continue..."
 
-docker compose up --build -d
+docker compose up -d
 
 echo "\n===================================================="
 echo " Deployment Complete! "
