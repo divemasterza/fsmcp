@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy project files
-COPY pyproject.toml ./ 
-COPY README.md ./ # Add this line to copy README.md
+COPY pyproject.toml ./
+COPY README.md ./
 COPY nextcloud_mcp/ ./nextcloud_mcp/
 COPY api.py ./api.py
 
