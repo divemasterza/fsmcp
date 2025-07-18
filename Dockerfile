@@ -14,7 +14,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     gcc     python3-dev     && rm -rf /var/lib/apt/lists/*
 
 # Copy project files
-COPY pyproject.toml poetry.lock* ./ # Copy poetry.lock if you switch to poetry
+COPY pyproject.toml ./ 
 COPY nextcloud_mcp/ ./nextcloud_mcp/
 COPY api.py ./api.py
 
