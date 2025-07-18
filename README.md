@@ -51,7 +51,7 @@ DOMAIN_NAME="your.domain.com"
 CERTBOT_EMAIL="your.email@example.com"
 ```
 
-You can get a secure app password from your Nextcloud account settings under **Security > Devices & sessions**.
+You can get a secure app password from your Nextcloud account settings under **Security \> Devices & sessions**.
 
 ### 4. Usage (Library)
 
@@ -69,11 +69,11 @@ This setup uses Docker Compose to orchestrate your FastAPI application, Nginx as
 
 1.  **Ensure your `.env` file is configured** with all `NEXTCLOUD_*` variables, `API_KEY`, `DOMAIN_NAME`, and `CERTBOT_EMAIL`.
 2.  **Create Nginx configuration directory:**
-    ```bash
+```bash
 mkdir -p nginx
-    ```
+```
 3.  **Create Nginx configuration file (`nginx/nginx.conf`):**
-    ```nginx
+```nginx
 server {
     listen 80;
     server_name ${DOMAIN_NAME};
@@ -105,8 +105,8 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
-    ```
-    *Note: Replace `${DOMAIN_NAME}` with your actual domain name in the `nginx.conf` if you are not using Docker Compose's environment variable substitution.* (Docker Compose will substitute this for you from the .env file).
+```
+*Note: Replace `${DOMAIN_NAME}` with your actual domain name in the `nginx.conf` if you are not using Docker Compose's environment variable substitution.* (Docker Compose will substitute this for you from the .env file).
 
 #### b. Obtain SSL Certificates (First Run)
 
@@ -150,90 +150,84 @@ Your API will be available at `https://your.domain.com`. You can access the inte
 **API Endpoints:**
 
 *   **`POST /save_file`**: Save a file to Nextcloud and get a public share link.
-    ```bash
+```bash
     curl -X POST "https://your.domain.com/save_file" \
          -H "Authorization: Bearer your_super_secret_api_key" \
          -H "Content-Type: application/json" \
          -d '{"path": "my_new_file.txt", "content": "Hello World!", "is_base64": false}'
-    ```
+```
 
 *   **`GET /read_file`**: Read a file from Nextcloud.
-    ```bash
+```bash
     curl -X GET "https://your.domain.com/read_file?path=my_new_file.txt" \
          -H "Authorization: Bearer your_super_secret_api_key"
-    ```
+```
 
 *   **`PUT /alter_file`**: Alter (overwrite) a file in Nextcloud.
-    ```bash
+```bash
     curl -X PUT "https://your.domain.com/alter_file" \
          -H "Authorization: Bearer your_super_secret_api_key" \
          -H "Content-Type: application/json" \
          -d '{"path": "my_new_file.txt", "content": "Altered content!", "is_base64": false}'
-    ```
+```
 
 *   **`GET /list_directory`**: List contents of a directory in Nextcloud.
-    ```bash
+```bash
     curl -X GET "https://your.domain.com/list_directory?path=my_folder" \
          -H "Authorization: Bearer your_super_secret_api_key"
-    ```
+```
 
 *   **`GET /download_folder_as_zip`**: Download a folder from Nextcloud as a zip archive.
-    ```bash
+```bash
     curl -X GET "https://your.domain.com/download_folder_as_zip?path=my_folder" \
          -H "Authorization: Bearer your_super_secret_api_key" \
          --output my_folder.zip
-    ```
+```
 
 *   **`POST /create_folder`**: Create a folder in Nextcloud.
-    ```bash
+```bash
     curl -X POST "https://your.domain.com/create_folder" \
          -H "Authorization: Bearer your_super_secret_api_key" \
          -H "Content-Type: application/json" \
          -d '{"path": "my_new_folder"}'
-    ```
+```
 
 *   **`POST /move_item`**: Move or rename a file or folder in Nextcloud.
-    ```bash
+```bash
     curl -X POST "https://your.domain.com/move_item" \
          -H "Authorization: Bearer your_super_secret_api_key" \
          -H "Content-Type: application/json" \
          -d '{"source_path": "old_name.txt", "destination_path": "new_name.txt"}'
-    ```
+```
 
 *   **`POST /copy_item`**: Copy a file or folder in Nextcloud.
-    ```bash
+```bash
     curl -X POST "https://your.domain.com/copy_item" \
          -H "Authorization: Bearer your_super_secret_api_key" \
          -H "Content-Type: application/json" \
          -d '{"source_path": "original.txt", "destination_path": "copy.txt"}'
-    ```
+```
 
 *   **`POST /share_folder`**: Share a folder in Nextcloud and get a public share link.
-    ```bash
+```bash
     curl -X POST "https://your.domain.com/share_folder" \
          -H "Authorization: Bearer your_super_secret_api_key" \
          -H "Content-Type: application/json" \
          -d '{"path": "my_folder_to_share"}'
-    ```
+```
 
 *   **`DELETE /delete_file`**: Delete a file from Nextcloud.
-    ```bash
+```bash
     curl -X DELETE "https://your.domain.com/delete_file?path=my_new_file.txt" \
          -H "Authorization: Bearer your_super_secret_api_key"
-    ```
+```
 
 *   **`DELETE /delete_folder`**: Delete a folder from Nextcloud.
-    ```bash
+```bash
     curl -X DELETE "https://your.domain.com/delete_folder?path=my_new_folder" \
          -H "Authorization: Bearer your_super_secret_api_key"
-    ```
+```
 
 ## Future Enhancements (Roadmap)
 
 For a detailed list of potential future features and improvements, please refer to the [ROADMAP.md](ROADMAP.md) file.
-
-## How It Works
-
-The core logic is in the `Ctx` class (`nextcloud_mcp/context.py`), which handles the interactions with Nextcloud's WebDAV and OCS APIs.
-
-```
