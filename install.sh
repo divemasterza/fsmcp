@@ -21,15 +21,17 @@ if [ -f .env ]; then
     export $(grep -v '^\s*#' .env | xargs)
 fi
 
-# --- 3. Prompt for Nextcloud Credentials if missing ---
+# --- 3. Prompt for Nextcloud Credentials if missing or are placeholders ---
 
 # Function to prompt for a variable and update .env
 prompt_and_update_env() {
     local var_name=$1
     local prompt_text=$2
+    local placeholder_value=$3 # New: placeholder value to check against
     local current_value=$(eval echo \$$var_name)
 
-    if [ -z "$current_value" ]; then
+    # Check if current_value is empty OR matches the placeholder
+    if [ -z "$current_value" ] || [ "$current_value" == "$placeholder_value" ]; then
         read -p "Enter $prompt_text: " new_value
         if [ -z "$new_value" ]; then
             echo "$prompt_text cannot be empty. Exiting."
@@ -46,16 +48,17 @@ prompt_and_update_env() {
     fi
 }
 
-prompt_and_update_env "NEXTCLOUD_INSTANCE_URL" "Nextcloud Instance URL (e.g., https://your.nextcloud.com)"
-prompt_and_update_env "NEXTCLOUD_USERNAME" "Nextcloud Username"
-prompt_and_update_env "NEXTCLOUD_PASSWORD" "Nextcloud Password (App password recommended)"
-prompt_and_update_env "API_KEY" "API Key for FastAPI (generate a strong, random key)"
+prompt_and_update_env "NEXTCLOUD_INSTANCE_URL" "Nextcloud Instance URL (e.g., https://your.nextcloud.com)" "https://your-nextcloud-instance.com"
+prompt_and_update_env "NEXTCLOUD_USERNAME" "Nextcloud Username" "your_username"
+prompt_and_update_env "NEXTCLOUD_PASSWORD" "Nextcloud Password (App password recommended)" "your_password"
+prompt_and_update_env "API_KEY" "API Key for FastAPI (generate a strong, random key)" "your_super_secret_api_key"
 
 # Optional: Prompt for NEXTCLOUD_USAGE_FOLDER if not set
-if [ -z "$NEXTCLOUD_USAGE_FOLDER" ]; then
-    read -p "Enter Nextcloud Usage Folder (optional, leave empty for root): " new_usage_folder
-    # Update the .env file only if a value was provided
-    if [ -n "$new_usage_folder" ]; then
+# Note: This one doesn't strictly need a placeholder check as it's optional and can be empty
+if [ -z "$NEXTCLOUD_USAGE_FOLDER" ] || [ "$NEXTCLOUD_USAGE_FOLDER" == "MCP-Uploads" ]; then
+    read -p "Enter Nextcloud Usage Folder (optional, leave empty for root, current: $NEXTCLOUD_USAGE_FOLDER): " new_usage_folder
+    # Update the .env file only if a value was provided or if it was the placeholder
+    if [ -n "$new_usage_folder" ] || [ "$NEXTCLOUD_USAGE_FOLDER" == "MCP-Uploads" ]; then
         sed -i.bak "s|^#*\s*NEXTCLOUD_USAGE_FOLDER=.*|NEXTCLOUD_USAGE_FOLDER=\"$new_usage_folder\"|g" .env
         rm .env.bak
         export NEXTCLOUD_USAGE_FOLDER="$new_usage_folder"
@@ -65,9 +68,9 @@ if [ -z "$NEXTCLOUD_USAGE_FOLDER" ]; then
     fi
 fi
 
-# --- 4. Prompt for Deployment Variables if missing ---
-prompt_and_update_env "DOMAIN_NAME" "Domain Name for your API (e.g., api.yourdomain.com)"
-prompt_and_update_env "CERTBOT_EMAIL" "Email for Certbot notifications"
+# --- 4. Prompt for Deployment Variables if missing or are placeholders ---
+prompt_and_update_env "DOMAIN_NAME" "Domain Name for your API (e.g., api.yourdomain.com)" "your.domain.com"
+prompt_and_update_env "CERTBOT_EMAIL" "Email for Certbot notifications" "your.email@example.com"
 
 # --- 5. Prepare Nginx directory ---
 echo "Ensuring nginx configuration directory exists..."
@@ -99,4 +102,4 @@ echo "\n===================================================="
 echo " Deployment Complete! "
 echo " Your Nextcloud MCP API should now be running at https://$DOMAIN_NAME "
 echo " Access API docs at https://$DOMAIN_NAME/docs "
-echo "===================================================="}
+echo "===================================================="
